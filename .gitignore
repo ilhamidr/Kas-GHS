@@ -13,4 +13,15 @@ test_url.ps1
 read_env.ps1
 test_sheets.ps1
 
+# Secrets
+.env
+
+# Helper scripts
+enable_pages.ps1
+list_env_keys.ps1
+check_pages.ps1
+check_token.ps1
+inspect_env.ps1
+dump_env.ps1
+
 # Keep data.json as fallback backup is intentional
