@@ -108,17 +108,39 @@
     });
   }
 
-  // ===== Data loading =====
+// ===== Data loading =====
+  // Google Sheets published CSV redirects (307) and loses CORS headers on the
+  // follow, so we route through a CORS proxy when running from a file:// or
+  // non-allowed origin. Try direct first, then proxy fallback.
+  const PROXIES = [
+    function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
+    function (u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); }
+  ];
+
   function sheetUrl(name) {
     return CSV_BASE + '?gid=' + GIDS[name] + '&single=true&output=csv';
   }
 
+  async function fetchText(url) {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.text();
+  }
+
   async function fetchSheet(name) {
-    const res = await fetch(sheetUrl(name), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + name);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    return { name: name, rows: rows };
+    const url = sheetUrl(name);
+    // Try direct first
+    try {
+      return { name: name, rows: parseCSV(await fetchText(url)) };
+    } catch (e) {
+      // Try each proxy in turn
+      for (const prox of PROXIES) {
+        try {
+          return { name: name, rows: parseCSV(await fetchText(prox(url))) };
+        } catch (e2) { /* try next */ }
+      }
+      throw new Error('Failed to load sheet ' + name);
+    }
   }
 
   // Load static data.json as fallback
