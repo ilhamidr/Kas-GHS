@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Kas Griya Hasanah Sukaasih</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🏘️</div>
+        <div class="brand-text">
+          <h1>Kas Griya</h1>
+          <span>Hasanah Sukaasih</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-ico">📊</span> Dashboard
+        </button>
+        <div class="nav-group-title">Data</div>
+        <button class="nav-item" data-view="DB_WARGA">
+          <span class="nav-ico">👥</span> Warga
+        </button>
+        <button class="nav-item" data-view="DB_IURAN">
+          <span class="nav-ico">💰</span> Iuran
+        </button>
+        <button class="nav-item" data-view="DB_JIMPITAN">
+          <span class="nav-ico">🔄</span> Jimpitan
+        </button>
+        <button class="nav-item" data-view="DB_RONDA">
+          <span class="nav-ico">🚨</span> Ronda
+        </button>
+        <button class="nav-item" data-view="DB_KERJA_BAKTI">
+          <span class="nav-ico">🧹</span> Kerja Bakti
+        </button>
+        <button class="nav-item" data-view="DB_TUNGGAKAN">
+          <span class="nav-ico">⏰</span> Tunggakan
+        </button>
+        <div class="nav-group-title">Keuangan</div>
+        <button class="nav-item" data-view="DB_REKAP_PEMASUKAN">
+          <span class="nav-ico">📈</span> Rekap Pemasukan
+        </button>
+        <button class="nav-item" data-view="DB_REKAP_PENGELUARAN">
+          <span class="nav-ico">📉</span> Rekap Pengeluaran
+        </button>
+        <button class="nav-item" data-view="SUMMARY">
+          <span class="nav-ico">🧾</span> Summary
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Data live dari Google Sheets</p>
+        <p class="muted">Auto-refresh 15 detik</p>
+      </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <div class="page-title">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Ringkasan keuangan kas warga</p>
+        </div>
+        <div class="search-box">
+          <input type="text" id="globalSearch" placeholder="Cari warga / blok / data...">
+        </div>
+        <span class="live-badge" id="liveBadge">● LOADING</span>
+      </header>
+
+      <section class="content" id="content">
+        <!-- injected by app.js -->
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

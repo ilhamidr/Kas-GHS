@@ -1,0 +1,16 @@
+# Node / build artifacts
+node_modules/
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Temp probe files
+*.probe.txt
+live.csv
+test_url.ps1
+read_env.ps1
+test_sheets.ps1
+
+# Keep data.json as fallback backup is intentional
