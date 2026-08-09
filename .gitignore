@@ -20,6 +20,7 @@ test_sheets.ps1
 enable_pages.ps1
 list_env_keys.ps1
 check_pages.ps1
+check_pages_build.ps1
 check_token.ps1
 inspect_env.ps1
 dump_env.ps1
