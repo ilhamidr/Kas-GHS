@@ -422,7 +422,20 @@
       });
     });
 
+    let tunggakanCol = null;
+    if (name === 'DB_TUNGGAKAN') {
+      Object.keys(headerRow).forEach(function (k) {
+        if (String(headerRow[k]).toUpperCase().indexOf('TOTAL') !== -1 || String(headerRow[k]).toUpperCase().indexOf('TUNGGAKAN') !== -1) {
+          tunggakanCol = k;
+        }
+      });
+    }
+
     const filtered = dataRows.filter(function (r) {
+      if (tunggakanCol) {
+        const val = parseFloat(r[tunggakanCol]) || 0;
+        if (val <= 0) return false;
+      }
       if (!searchQuery) return true;
       return allCols.some(function (c) {
         return String(r[c] || '').toLowerCase().indexOf(searchQuery) !== -1;
