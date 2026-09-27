@@ -219,10 +219,13 @@
     if (v == null || v === '') return '';
     if (typeof v === 'string' && v.trim() === '') return '';
 
-    // Disable formatting for phone numbers
+    // Disable formatting for phone numbers and years
     const strV = String(v).trim();
-    if (header && String(header).toUpperCase().indexOf('HP') !== -1) {
-      return strV;
+    if (header) {
+      const hUpper = String(header).toUpperCase();
+      if (hUpper.indexOf('HP') !== -1 || hUpper.indexOf('TAHUN') !== -1) {
+        return strV;
+      }
     }
     // Also disable for strings starting with '0' that are reasonably long
     if (strV.startsWith('0') && strV.length >= 10 && /^\d+$/.test(strV)) {
@@ -451,8 +454,9 @@
           const v = r[c];
           const head = headerRow[c] || '';
           const strV = String(v).trim();
-          const isHp = String(head).toUpperCase().indexOf('HP') !== -1 || (strV.startsWith('0') && strV.length >= 10);
-          const isNum = !isHp && !isNaN(parseFloat(v)) && /^-?\d+(\.\d+)?$/.test(strV);
+          const hUpper = String(head).toUpperCase();
+          const isUnformattedNum = hUpper.indexOf('HP') !== -1 || hUpper.indexOf('TAHUN') !== -1 || (strV.startsWith('0') && strV.length >= 10);
+          const isNum = !isUnformattedNum && !isNaN(parseFloat(v)) && /^-?\d+(\.\d+)?$/.test(strV);
 
           html += '<td class="' + (isNum ? 'num' : '') + '">' + formatCell(v, head) + '</td>';
         });
