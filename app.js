@@ -521,25 +521,50 @@
   // ===== Summary view =====
   function renderSummary() {
     const s = summarize();
-    const summaryRows = clean('SUMMARY');
-    const headerRow = summaryRows[0] || {};
+    const summaryRows = clean('SUMMARY').slice(1);
+
+    // Group by month
+    const monthsObj = {};
+    summaryRows.forEach(function (r) {
+      const bulan = r['B'];
+      const kat = String(r['C']).toUpperCase();
+      const val = parseFloat(r['D']) || 0;
+      if (!bulan) return;
+      // keep order based on first appearance
+      if (!monthsObj[bulan]) monthsObj[bulan] = { in: 0, out: 0, order: Object.keys(monthsObj).length };
+      if (kat === 'PEMASUKAN') monthsObj[bulan].in += val;
+      else if (kat === 'PENGELUARAN') monthsObj[bulan].out += val;
+    });
+
+    const monthsArr = Object.keys(monthsObj).sort((a, b) => monthsObj[a].order - monthsObj[b].order);
 
     let html = '';
     html += '<div class="kpi-grid">';
-    html += '<div class="kpi-card"><div class="kpi-ico green">🏦</div><div class="kpi-info"><div class="kpi-label">Saldo</div><div class="kpi-value">' + formatMoney(s.balance) + '</div></div></div>';
-    html += '<div class="kpi-card"><div class="kpi-ico blue">💵</div><div class="kpi-info"><div class="kpi-label">Pemasukan</div><div class="kpi-value">' + formatMoney(s.totalIncome) + '</div></div></div>';
-    html += '<div class="kpi-card"><div class="kpi-ico red">💸</div><div class="kpi-info"><div class="kpi-label">Pengeluaran</div><div class="kpi-value">' + formatMoney(s.totalExpense) + '</div></div></div>';
+    html += '<div class="kpi-card"><div class="kpi-ico green">🏦</div><div class="kpi-info"><div class="kpi-label">Total Saldo Kas</div><div class="kpi-value">' + formatMoney(s.balance) + '</div></div></div>';
+    html += '<div class="kpi-card"><div class="kpi-ico blue">💵</div><div class="kpi-info"><div class="kpi-label">Pemasukan Global</div><div class="kpi-value">' + formatMoney(s.totalIncome) + '</div></div></div>';
+    html += '<div class="kpi-card"><div class="kpi-ico red">💸</div><div class="kpi-info"><div class="kpi-label">Pengeluaran Global</div><div class="kpi-value">' + formatMoney(s.totalExpense) + '</div></div></div>';
     html += '</div>';
 
-    html += '<div class="table-card"><div class="table-header"><div><h3>🧾 Summary Detail</h3></div></div><div class="table-wrap"><table><thead><tr>';
-    colVals(headerRow).forEach(function (c) { html += '<th>' + headerRow[c] + '</th>'; });
-    html += '</tr></thead><tbody>';
-    summaryRows.slice(1).forEach(function (r) {
-      html += '<tr>';
-      colVals(headerRow).forEach(function (c) { html += '<td>' + formatCell(r[c]) + '</td>'; });
-      html += '</tr>';
-    });
-    html += '</tbody></table></div></div>';
+    // RENDER MONTHLY CARDS
+    html += '<div class="page-title" style="margin:30px 0 16px;"><h3>📊 Laporan Bulanan</h3><p class="muted">Perbandingan Pemasukan & Pengeluaran Per Bulan</p></div>';
+    html += '<div class="kpi-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">';
+
+    if (monthsArr.length === 0) {
+      html += '<div class="empty">Tidak ada data bulanan.</div>';
+    } else {
+      monthsArr.forEach(function (m) {
+        const g = monthsObj[m];
+        const net = g.in - g.out;
+        const netColor = net >= 0 ? 'color: var(--primary);' : 'color: var(--danger);';
+        html += '<div class="kpi-card" style="display:flex; flex-direction:column; align-items:flex-start; padding: 20px;">';
+        html += '<h4 style="margin:0 0 16px 0; font-size: 17px; border-bottom: 2px solid var(--border); width: 100%; padding-bottom: 10px; display:flex; justify-content:space-between;"><span>Bulan ' + m + '</span><span style="font-size:14px;' + netColor + '">' + (net >= 0 ? '↗ Surplus' : '↘ Defisit') + '</span></h4>';
+        html += '<div style="display:flex; justify-content:space-between; width:100%; margin-bottom:8px;"><span style="color:var(--text-muted);">Pemasukan</span><span style="font-weight:600;">' + formatMoney(g.in) + '</span></div>';
+        html += '<div style="display:flex; justify-content:space-between; width:100%; margin-bottom:16px;"><span style="color:var(--text-muted);">Pengeluaran</span><span style="font-weight:600;">' + formatMoney(g.out) + '</span></div>';
+        html += '<div style="display:flex; justify-content:space-between; width:100%; padding-top:12px; border-top:1px dashed var(--border);"><span style="font-weight:600;">Sisa (Saldo)</span><span style="font-weight:700; font-size: 16px; ' + netColor + '">' + formatMoney(net) + '</span></div>';
+        html += '</div>';
+      });
+    }
+    html += '</div>';
 
     content.innerHTML = html;
   }
