@@ -224,6 +224,9 @@
     if (header) {
       const hUpper = String(header).toUpperCase();
       if (hUpper.indexOf('HP') !== -1 || hUpper.indexOf('TAHUN') !== -1) {
+        if (hUpper.indexOf('TAHUN') !== -1 && strV.endsWith('.0')) {
+          return strV.substring(0, strV.length - 2);
+        }
         return strV;
       }
     }
