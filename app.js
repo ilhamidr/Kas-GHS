@@ -108,7 +108,7 @@
     });
   }
 
-// ===== Data loading =====
+  // ===== Data loading =====
   // Google Sheets published CSV redirects (307) and loses CORS headers on the
   // follow, so we route through a CORS proxy when running from a file:// or
   // non-allowed origin. Try direct first, then proxy fallback.
@@ -215,11 +215,22 @@
     if (isNaN(n)) return v;
     return 'Rp ' + fmtNum.format(n);
   }
-  function formatCell(v) {
+  function formatCell(v, header) {
     if (v == null || v === '') return '';
     if (typeof v === 'string' && v.trim() === '') return '';
+
+    // Disable formatting for phone numbers
+    const strV = String(v).trim();
+    if (header && String(header).toUpperCase().indexOf('HP') !== -1) {
+      return strV;
+    }
+    // Also disable for strings starting with '0' that are reasonably long
+    if (strV.startsWith('0') && strV.length >= 10 && /^\d+$/.test(strV)) {
+      return strV;
+    }
+
     const n = parseFloat(v);
-    if (!isNaN(n) && String(v).trim() !== '' && /^-?\d+(\.\d+)?$/.test(String(v))) {
+    if (!isNaN(n) && strV !== '' && /^-?\d+(\.\d+)?$/.test(strV)) {
       return fmtNum.format(n);
     }
     return v;
@@ -438,8 +449,12 @@
         html += '<tr>';
         allCols.forEach(function (c) {
           const v = r[c];
-          const isNum = !isNaN(parseFloat(v)) && /^-?\d+(\.\d+)?$/.test(String(v));
-          html += '<td class="' + (isNum ? 'num' : '') + '">' + formatCell(v) + '</td>';
+          const head = headerRow[c] || '';
+          const strV = String(v).trim();
+          const isHp = String(head).toUpperCase().indexOf('HP') !== -1 || (strV.startsWith('0') && strV.length >= 10);
+          const isNum = !isHp && !isNaN(parseFloat(v)) && /^-?\d+(\.\d+)?$/.test(strV);
+
+          html += '<td class="' + (isNum ? 'num' : '') + '">' + formatCell(v, head) + '</td>';
         });
         html += '</tr>';
       });
