@@ -258,7 +258,8 @@
     DB_TUNGGAKAN: { title: 'Data Tunggakan', icon: '⏰', desc: 'Daftar tunggakan warga' },
     DB_REKAP_PEMASUKAN: { title: 'Rekap Pemasukan', icon: '📈', desc: 'Rekap pemasukan per warga' },
     DB_REKAP_PENGELUARAN: { title: 'Rekap Pengeluaran', icon: '📉', desc: 'Rekap pengeluaran kas' },
-    SUMMARY: { title: 'Summary Keuangan', icon: '🧾', desc: 'Ringkasan keuangan' }
+    SUMMARY: { title: 'Summary (Tabel Native)', icon: '🧾', desc: 'Laporan keuangan rekap manual' },
+    ANALYTICS: { title: 'Analitik & Audit', icon: '👁️', desc: 'Laporan analitik pintar dari raw data' }
   };
 
   // ===== DOM refs =====
@@ -655,6 +656,7 @@
 
     if (currentView === 'dashboard') renderDashboard();
     else if (currentView === 'SUMMARY') renderSummary();
+    else if (currentView === 'ANALYTICS') renderAnalytics();
     else renderSheetTable(currentView);
 
     // Update live badge
