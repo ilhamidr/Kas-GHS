@@ -569,6 +569,79 @@
     content.innerHTML = html;
   }
 
+  // ===== Analytics / Audit View =====
+  function renderAnalytics() {
+    let s = summarize(); // get native summary balance
+
+    // Analyze Raw Income
+    let rawIn = 0;
+    let iuranRows = clean('DB_IURAN').slice(1);
+    let jimpitanRows = clean('DB_JIMPITAN').slice(1);
+    let rondaRows = clean('DB_RONDA').slice(1);
+    let kbRows = clean('DB_KERJA_BAKTI').slice(1);
+
+    let monthData = {};
+    function addIn(bln, val) {
+      if (!bln) return;
+      if (!monthData[bln]) monthData[bln] = { in: 0, out: 0 };
+      monthData[bln].in += (parseFloat(val) || 0);
+      rawIn += (parseFloat(val) || 0);
+    }
+
+    iuranRows.forEach(r => addIn(r['D'], r['F']));
+    jimpitanRows.forEach(r => addIn(r['D'], r['J']));
+    rondaRows.forEach(r => addIn(r['D'], r['K']));
+    kbRows.forEach(r => {
+      let v = String(r['H']).toUpperCase();
+      if (v.indexOf('ROKOK') === -1) addIn(r['D'], r['H']);
+    });
+
+    // Analyze Raw Expense (summing weeks directly, ignoring column H)
+    let rawOut = 0;
+    let expRows = clean('DB_REKAP_PENGELUARAN').slice(1);
+    expRows.forEach(r => {
+      let bln = r['B'];
+      if (!bln) return;
+      let val = (parseFloat(r['D']) || 0) + (parseFloat(r['E']) || 0) + (parseFloat(r['F']) || 0) + (parseFloat(r['G']) || 0);
+      if (!monthData[bln]) monthData[bln] = { in: 0, out: 0 };
+      monthData[bln].out += val;
+      rawOut += val;
+    });
+
+    let html = '';
+    html += '<div class="kpi-grid">';
+    html += '<div class="kpi-card" style="background:var(--primary); color:#fff"><div style="font-size:24px; font-weight:700">Audit Live</div><p style="opacity:0.9">Kalkulasi 100% dari sumber mentah</p></div>';
+    html += '<div class="kpi-card"><div class="kpi-ico blue">🔄</div><div class="kpi-info"><div class="kpi-label">Pemasukan Asli vs Rekap</div><div class="kpi-value" style="font-size:18px;">' + formatMoney(rawIn) + ' <span style="font-size:12px; font-weight:normal;">/ ' + formatMoney(s.totalIncome) + '</span></div></div></div>';
+    html += '<div class="kpi-card"><div class="kpi-ico red">🔎</div><div class="kpi-info"><div class="kpi-label">Pengeluaran Asli vs Rekap</div><div class="kpi-value" style="font-size:18px;">' + formatMoney(rawOut) + ' <span style="font-size:12px; font-weight:normal;">/ ' + formatMoney(s.totalExpense) + '</span></div></div></div>';
+    html += '</div>';
+
+    html += '<div class="page-title" style="margin:30px 0 16px;"><h3>📈 Analitik Mutakhir</h3><p class="muted">Hitungan Murni Matematika (Tanpa bergantung pada tabel kalibrasi Summary/Rekap)</p></div>';
+    html += '<div class="kpi-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">';
+
+    // Display Monthly
+    const monthOrder = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+    const sortedMonths = Object.keys(monthData).sort((a, b) => monthOrder.indexOf(a.toUpperCase()) - monthOrder.indexOf(b.toUpperCase()));
+
+    if (sortedMonths.length === 0) {
+      html += '<div class="empty">Tidak ada data transaksi.</div>';
+    }
+    sortedMonths.forEach(m => {
+      const d = monthData[m];
+      if (d.in === 0 && d.out === 0) return;
+      const net = d.in - d.out;
+      const netColor = net >= 0 ? 'color: var(--primary);' : 'color: var(--danger);';
+      html += '<div class="kpi-card" style="display:flex; flex-direction:column; padding:20px;">';
+      html += '<h4 style="margin:0 0 12px 0; border-bottom:1px solid var(--border); padding-bottom:8px;">Bulan ' + m.toUpperCase() + '</h4>';
+      html += '<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span class="muted" style="color:var(--text-muted)">Pemasukan (Real):</span><strong style="color:var(--text)">' + formatMoney(d.in) + '</strong></div>';
+      html += '<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span class="muted" style="color:var(--text-muted)">Pengeluaran (Real):</span><strong style="color:var(--text)">' + formatMoney(d.out) + '</strong></div>';
+      html += '<div style="display:flex; justify-content:space-between; margin-top:auto; padding-top:12px; border-top:1px dashed var(--border);"><span style="color:var(--text)"><strong>Saldo (Sisa)</strong></span><strong style="' + netColor + '">' + formatMoney(net) + '</strong></div>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+    content.innerHTML = html;
+  }
+
   // ===== Render dispatcher =====
   function render() {
     if (!dataLoaded) {
